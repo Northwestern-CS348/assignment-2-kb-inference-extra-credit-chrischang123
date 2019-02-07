@@ -130,7 +130,37 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
-    def kb_explain(self, fact_or_rule):
+    def kb_explain_helper(self, fact, m):
+        indent = 4 * m * " "
+        Ans = ""
+        if isinstance(fact, Fact):
+            Ans += indent + "fact: " + str(fact.statement)
+            if fact.asserted:
+                Ans += " ASSERTED\n"
+                return Ans
+            else:
+                Ans += "\n"
+                for support_set in fact.supported_by:
+                    Ans += indent + "  SUPPORTED BY\n"
+                    for element in support_set:
+                        Ans += self.kb_explain_helper(element, m + 1)
+                return Ans
+        elif isinstance(fact, Rule):
+            Ans += indent + "rule: ("
+            Ans += ", ".join(list(map(str, fact.lhs)))
+            Ans +=  ') -> ' + str(fact.rhs)
+            if fact.asserted:
+                Ans += " ASSERTED\n"
+                return Ans
+            else:
+                Ans += "\n"
+                for support_set in fact.supported_by:
+                    Ans += indent + "  SUPPORTED BY\n"
+                    for element in support_set:
+                        Ans += self.kb_explain_helper(element, m + 1)
+                return Ans
+
+    def kb_explain(self, fact):
         """
         Explain where the fact or rule comes from
 
@@ -142,7 +172,16 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
-
+        if isinstance(fact, Fact):
+            if fact not in self.facts:
+                return "Fact is not in the KB"
+            else:
+                return self.kb_explain_helper(self.facts[self.facts.index(fact)], 0)
+        elif isinstance(fact, Rule):
+            if fact not in self.rules:
+                return "Rule is not in the KB"
+            else:
+                return self.kb_explain_helper(self.rules[self.rules.index(fact)], 0)
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
